@@ -54,19 +54,23 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
         String body = (canvasEntity != null && canvasEntity.getContent() != null) ? canvasEntity.getContent() : null;
 
         // Execute the JS in the browser, assembling all parts
-        String jsCode = getToolbarJs()
-                + getCanvasContainerJs()
-                + getStylesJs()
-                + getMakeDraggableJs()
-                + getCreateDraggableElementJs()
-                + getCreateImageElementJs()
-                + getCreateTableElementJs()
-                + getCreateTextElementJs()
-                + getLoadLayoutJs()
-                + getGetCurrentLayoutJs()
-                + getButtonsEventListenersJs()
-                + getUpdateEditModeUiJs() // new function to update UI when toggling modes
-                + getInitLayoutJs();
+        String jsCode =
+                getToolbarJs()
+                        + getCanvasContainerJs()
+                        + getStylesJs()
+                        + getElementToolbarJs()           // New toolbar for selected element
+                        + getMakeDraggableJs()
+                        + getCreateDraggableElementJs()
+                        + getCreateImageElementJs()
+                        + getCreateTableElementJs()
+                        + getCreateTextElementJs()
+                        + getLoadLayoutJs()
+                        + getGetCurrentLayoutJs()
+                        + getElementActionsJs()           // JS for element-specific actions
+                        + getButtonsEventListenersJs()
+                        + getUpdateEditModeUiJs()
+                        + getElementSelectionJs()         // JS for selecting elements and showing toolbar
+                        + getInitLayoutJs();
 
         getElement().executeJs(jsCode, getElement(), body);
     }
@@ -82,13 +86,10 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
         }
     }
 
-    // ********* Below are the private methods returning JS code as strings *********
-
     private String getToolbarJs() {
-        // Creates the toolbar and buttons (including the toggle edit mode button)
         return """
                let editMode = true; // Global flag indicating if we are in edit mode
-
+               
                const toolbar = document.createElement('div');
                toolbar.id = 'toolbar';
 
@@ -108,7 +109,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                saveLayoutBtn.id = 'saveLayout';
                saveLayoutBtn.textContent = 'Save';
 
-               // New toggle button for edit mode
+               // Toggle Edit Mode Button
                const toggleEditBtn = document.createElement('button');
                toggleEditBtn.id = 'toggleEditMode';
                toggleEditBtn.textContent = 'Edit Mode: ON';
@@ -122,7 +123,6 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     }
 
     private String getCanvasContainerJs() {
-        // Creates the canvas container
         return """
                const canvas = document.createElement('div');
                canvas.id = 'canvas';
@@ -133,13 +133,14 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     }
 
     private String getStylesJs() {
-        // Adds styles to the document head
         return """
                const style = document.createElement('style');
                style.textContent = `
                  .container {
                    padding: 10px;
+                   background-color: black;
                  }
+                 
                  #toolbar {
                    background: #eee;
                    padding: 10px;
@@ -147,9 +148,11 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                    gap: 10px;
                    margin-bottom: 10px;
                  }
+                 
                  button {
                    cursor: pointer;
                  }
+                 
                  #canvas {
                    position: relative;
                    width: 100%;
@@ -157,36 +160,74 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                    overflow: hidden;
                    border: 1px solid #ccc;
                  }
+                 
                  .draggable {
                    position: absolute;
                    border: 1px solid #aaa;
-                   background: #fff;
+                   background: black;
                    padding: 5px;
                    cursor: move;
                  }
-                 .draggable img {
+                 
+                 .draggable[data-type="image"] img {
                    max-width: 200px;
                    height: auto;
                    display: block;
                  }
+                 
                  .draggable table {
                    border-collapse: collapse;
                  }
+                 
                  .draggable table, .draggable td, .draggable th {
                    border: 1px solid #555;
                    padding: 5px;
                  }
-                 .draggable textarea {
+                 
+                 .draggable[data-type="text"] div[contenteditable="true"] {
                    width: 200px;
                    height: 100px;
+                   border: none;
+                   outline: none;
+                 }
+
+                 #element-toolbar {
+                   position: absolute;
+                   background: #333;
+                   color: #fff;
+                   padding: 5px;
+                   display: none;
+                   z-index: 999;
+                 }
+                 
+                 #element-toolbar button {
+                   background: #555;
+                   color: #fff;
+                   margin: 0 2px;
+                   border: none;
+                   padding: 3px 5px;
+                   font-size: 12px;
+                   cursor: pointer;
+                 }
+                 #element-toolbar button:hover {
+                   background: #777;
                  }
                `;
                document.head.appendChild(style);
                """;
     }
 
+    private String getElementToolbarJs() {
+        // A toolbar that appears near the selected element
+        // We'll dynamically fill it with options depending on the element type
+        return """
+               const elementToolbar = document.createElement('div');
+               elementToolbar.id = 'element-toolbar';
+               document.querySelector('.container').appendChild(elementToolbar);
+               """;
+    }
+
     private String getMakeDraggableJs() {
-        // Function to make elements draggable (only when editMode is true)
         return """
                function makeDraggable(el) {
                  let offsetX = 0;
@@ -194,7 +235,9 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                  let isDown = false;
 
                  el.addEventListener('mousedown', (e) => {
-                   if (!editMode) return; // If not in edit mode, do nothing
+                   if (!editMode) return;
+                   // If clicked inside toolbar, don't drag
+                   if (e.target.closest('#element-toolbar')) return;
                    isDown = true;
                    offsetX = e.clientX - el.offsetLeft;
                    offsetY = e.clientY - el.offsetTop;
@@ -202,7 +245,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                  });
 
                  document.addEventListener('mousemove', (e) => {
-                   if (!editMode || !isDown) return; // If not in edit mode, no dragging
+                   if (!editMode || !isDown) return;
                    const x = e.clientX - offsetX;
                    const y = e.clientY - offsetY;
                    el.style.left = x + 'px';
@@ -219,7 +262,6 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     }
 
     private String getCreateDraggableElementJs() {
-        // Function to create a draggable element
         return """
                function createDraggableElement() {
                  const el = document.createElement('div');
@@ -233,10 +275,9 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     }
 
     private String getCreateImageElementJs() {
-        // Function to create an image element
         return """
                function createImageElement(src, x = 50, y = 50) {
-                 if (!editMode) return; // Only create if in edit mode
+                 if (!editMode) return;
                  const el = createDraggableElement();
                  el.dataset.type = "image";
                  const img = document.createElement('img');
@@ -250,11 +291,9 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     }
 
     private String getCreateTableElementJs() {
-        // Function to create a table element
-        // By default, cells will be contentEditable in edit mode only (handled by updateEditModeUI)
         return """
                function createTableElement(tableData, x = 50, y = 50) {
-                 if (!editMode) return; // Only create if in edit mode
+                 if (!editMode) return;
                  const el = createDraggableElement();
                  el.dataset.type = "table";
                  const table = document.createElement('table');
@@ -278,16 +317,16 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     }
 
     private String getCreateTextElementJs() {
-        // Function to create a text (textarea) element
-        // Text area editability is handled by updateEditModeUI
+        // Use a contenteditable div for text to allow formatting
         return """
                function createTextElement(textValue, x = 50, y = 50) {
-                 if (!editMode) return; // Only create if in edit mode
+                 if (!editMode) return;
                  const el = createDraggableElement();
                  el.dataset.type = "text";
-                 const textarea = document.createElement('textarea');
-                 textarea.value = textValue;
-                 el.appendChild(textarea);
+                 const textDiv = document.createElement('div');
+                 textDiv.contentEditable = "true";
+                 textDiv.innerHTML = textValue;
+                 el.appendChild(textDiv);
                  el.style.left = x + 'px';
                  el.style.top = y + 'px';
                  canvas.appendChild(el);
@@ -296,7 +335,6 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     }
 
     private String getLoadLayoutJs() {
-        // Function to load the layout from JSON data
         return """
                function loadLayout(layoutData) {
                  canvas.innerHTML = '';
@@ -310,13 +348,12 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                      createTextElement(content, x, y);
                    }
                  });
-                 updateEditModeUI(); // Update UI based on current edit mode after loading
+                 updateEditModeUI();
                }
                """;
     }
 
     private String getGetCurrentLayoutJs() {
-        // Function to get current layout as JSON data
         return """
                function getCurrentLayout() {
                  const elements = canvas.querySelectorAll('.draggable');
@@ -342,7 +379,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                      });
                      content = tableData;
                    } else if (type === 'text') {
-                     content = el.querySelector('textarea').value;
+                     content = el.querySelector('div').innerHTML;
                    }
 
                    layoutData.push({ type, x: Number(x), y: Number(y), content });
@@ -353,13 +390,89 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                """;
     }
 
+    private String getElementActionsJs() {
+        // Actions for image, table, and text
+        return """
+               function changeImageSource(el) {
+                 const newSrc = prompt("Enter new image URL:", el.querySelector('img').src);
+                 if (newSrc) {
+                   el.querySelector('img').src = newSrc;
+                 }
+               }
+
+               function removeElement(el) {
+                 if (confirm("Remove this element?")) {
+                   el.remove();
+                   hideElementToolbar();
+                 }
+               }
+
+               // Table actions
+               function addTableRow(el) {
+                 const table = el.querySelector('table');
+                 const rowCount = table.rows.length;
+                 const colCount = table.rows[0].cells.length;
+                 const tr = document.createElement('tr');
+                 for (let i = 0; i < colCount; i++) {
+                   const td = document.createElement('td');
+                   td.textContent = "New Cell";
+                   tr.appendChild(td);
+                 }
+                 table.appendChild(tr);
+               }
+
+               function addTableColumn(el) {
+                 const table = el.querySelector('table');
+                 for (let i = 0; i < table.rows.length; i++) {
+                   const td = document.createElement('td');
+                   td.textContent = "New Cell";
+                   table.rows[i].appendChild(td);
+                 }
+               }
+
+               function removeTableRow(el) {
+                 const table = el.querySelector('table');
+                 const rowIndex = prompt("Enter row index to remove (0-based):");
+                 if (rowIndex !== null) {
+                   const i = parseInt(rowIndex);
+                   if (!isNaN(i) && i >= 0 && i < table.rows.length) {
+                     table.deleteRow(i);
+                   }
+                 }
+               }
+
+               function removeTableColumn(el) {
+                 const table = el.querySelector('table');
+                 const colIndex = prompt("Enter column index to remove (0-based):");
+                 if (colIndex !== null) {
+                   const i = parseInt(colIndex);
+                   if (!isNaN(i)) {
+                     for (let r = 0; r < table.rows.length; r++) {
+                       if (i >= 0 && i < table.rows[r].cells.length) {
+                         table.rows[r].deleteCell(i);
+                       }
+                     }
+                   }
+                 }
+               }
+
+               // Text formatting actions
+               function formatText(el, cmd, value = null) {
+                 // Temporarily focus the element
+                 const textDiv = el.querySelector('div[contenteditable="true"]');
+                 textDiv.focus();
+                 document.execCommand(cmd, false, value);
+               }
+
+               """;
+    }
+
     private String getButtonsEventListenersJs() {
-        // Event listeners for the buttons
         return """
                addImageBtn.addEventListener('click', () => {
                  if (editMode) {
                    createImageElement("https://via.placeholder.com/150");
-                   updateEditModeUI(); 
+                   updateEditModeUI();
                  }
                });
 
@@ -377,51 +490,156 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
 
                addTextBtn.addEventListener('click', () => {
                  if (editMode) {
-                   createTextElement("...");
+                   createTextElement("Edit me");
                    updateEditModeUI();
                  }
                });
 
                saveLayoutBtn.addEventListener('click', () => {
-                 // Saving can happen regardless of edit mode
                  const layoutData = getCurrentLayout();
                  const jsonString = JSON.stringify(layoutData);
                  $0.$server.saveLayout(jsonString);
                });
 
-               // Toggle edit mode event listener
                toggleEditBtn.addEventListener('click', () => {
                  editMode = !editMode;
                  toggleEditBtn.textContent = 'Edit Mode: ' + (editMode ? 'ON' : 'OFF');
+                 if (!editMode) {
+                   hideElementToolbar();
+                   selectedElement = null;
+                 }
                  updateEditModeUI();
                });
                """;
     }
 
     private String getUpdateEditModeUiJs() {
-        // This function updates the UI elements based on the current edit mode
         return """
                function updateEditModeUI() {
-                 // Update text areas
-                 const allTextareas = canvas.querySelectorAll('.draggable[data-type="text"] textarea');
-                 allTextareas.forEach(ta => {
-                   ta.readOnly = !editMode; // When view mode, text is not editable
+                 // Update text elements (readOnly in view mode is not needed now since we use contentEditable)
+                 // We'll just remove contentEditable in view mode:
+                 const textElements = canvas.querySelectorAll('.draggable[data-type="text"] div');
+                 textElements.forEach(div => {
+                   div.contentEditable = editMode;
                  });
 
-                 // Update tables
-                 const allTables = canvas.querySelectorAll('.draggable[data-type="table"] table');
-                 allTables.forEach(t => {
-                   const tds = t.querySelectorAll('td');
+                 // Update tables (contentEditable cells in edit mode)
+                 const tableElements = canvas.querySelectorAll('.draggable[data-type="table"] table');
+                 tableElements.forEach(table => {
+                   const tds = table.querySelectorAll('td');
                    tds.forEach(td => {
-                     td.contentEditable = editMode; // Editable only in edit mode
+                     td.contentEditable = editMode;
                    });
                  });
                }
                """;
     }
 
+    private String getElementSelectionJs() {
+        return """
+               let selectedElement = null;
+
+               canvas.addEventListener('click', (e) => {
+                 if (!editMode) return; // Only select in edit mode
+                 const el = e.target.closest('.draggable');
+                 if (el && canvas.contains(el)) {
+                   // Select this element
+                   selectedElement = el;
+                   showElementToolbar(el);
+                 } else {
+                   // Clicked on canvas but not on element
+                   hideElementToolbar();
+                   selectedElement = null;
+                 }
+               });
+
+               function showElementToolbar(el) {
+                 elementToolbar.innerHTML = '';
+                 elementToolbar.style.display = 'block';
+
+                 const type = el.dataset.type;
+
+                 // Common remove button
+                 const removeBtn = document.createElement('button');
+                 removeBtn.textContent = 'Remove';
+                 removeBtn.addEventListener('click', () => removeElement(el));
+                 elementToolbar.appendChild(removeBtn);
+
+                 if (type === 'image') {
+                   const changeSrcBtn = document.createElement('button');
+                   changeSrcBtn.textContent = 'Change Source';
+                   changeSrcBtn.addEventListener('click', () => changeImageSource(el));
+                   elementToolbar.appendChild(changeSrcBtn);
+                 }
+
+                 if (type === 'table') {
+                   const addRowBtn = document.createElement('button');
+                   addRowBtn.textContent = 'Add Row';
+                   addRowBtn.addEventListener('click', () => addTableRow(el));
+                   elementToolbar.appendChild(addRowBtn);
+
+                   const addColBtn = document.createElement('button');
+                   addColBtn.textContent = 'Add Col';
+                   addColBtn.addEventListener('click', () => addTableColumn(el));
+                   elementToolbar.appendChild(addColBtn);
+
+                   const remRowBtn = document.createElement('button');
+                   remRowBtn.textContent = 'Remove Row';
+                   remRowBtn.addEventListener('click', () => removeTableRow(el));
+                   elementToolbar.appendChild(remRowBtn);
+
+                   const remColBtn = document.createElement('button');
+                   remColBtn.textContent = 'Remove Col';
+                   remColBtn.addEventListener('click', () => removeTableColumn(el));
+                   elementToolbar.appendChild(remColBtn);
+                 }
+
+                 if (type === 'text') {
+                   const boldBtn = document.createElement('button');
+                   boldBtn.textContent = 'B';
+                   boldBtn.addEventListener('click', () => formatText(el, 'bold'));
+                   elementToolbar.appendChild(boldBtn);
+
+                   const italicBtn = document.createElement('button');
+                   italicBtn.textContent = 'I';
+                   italicBtn.addEventListener('click', () => formatText(el, 'italic'));
+                   elementToolbar.appendChild(italicBtn);
+
+                   const underlineBtn = document.createElement('button');
+                   underlineBtn.textContent = 'U';
+                   underlineBtn.addEventListener('click', () => formatText(el, 'underline'));
+                   elementToolbar.appendChild(underlineBtn);
+
+                   const fontSizeBtn = document.createElement('button');
+                   fontSizeBtn.textContent = 'Font Size';
+                   fontSizeBtn.addEventListener('click', () => {
+                     const size = prompt("Enter font size (1-7):", "3");
+                     if (size) formatText(el, 'fontSize', size);
+                   });
+                   elementToolbar.appendChild(fontSizeBtn);
+                 }
+
+                 // Position toolbar
+                 const rect = el.getBoundingClientRect();
+                 const containerRect = document.querySelector('.container').getBoundingClientRect();
+                 elementToolbar.style.left = (rect.left - containerRect.left) + 'px';
+                 elementToolbar.style.top = (rect.top - containerRect.top - elementToolbar.offsetHeight - 5) + 'px';
+               }
+
+               function hideElementToolbar() {
+                 elementToolbar.style.display = 'none';
+                 elementToolbar.innerHTML = '';
+               }
+
+               window.addEventListener('scroll', () => {
+                 if (selectedElement && elementToolbar.style.display === 'block') {
+                   showElementToolbar(selectedElement);
+                 }
+               });
+               """;
+    }
+
     private String getInitLayoutJs() {
-        // Initialize layout if there is JSON data
         return """
                if ($1) {
                  try {
@@ -431,7 +649,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                    console.error("Invalid initial layout JSON", e);
                  }
                } else {
-                 updateEditModeUI(); // Ensure UI is correct even if empty layout
+                 updateEditModeUI();
                }
                """;
     }
