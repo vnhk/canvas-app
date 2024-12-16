@@ -405,37 +405,37 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                    el.remove();
                    hideElementToolbar();
                  }
-               }
+                }
 
-               // Table actions
-               function addTableRow(el) {
-                 const table = el.querySelector('table');
-                 const rowCount = table.rows.length;
-                 const colCount = table.rows[0].cells.length;
-                 const tr = document.createElement('tr');
-                 for (let i = 0; i < colCount; i++) {
-                   const td = document.createElement('td');
-                   td.textContent = "New Cell";
-                   tr.appendChild(td);
-                 }
-                 table.appendChild(tr);
-               }
+                // Table actions
+                function addTableRow(el) {
+                  const table = el.querySelector('table');
+                  const rowCount = table.rows.length;
+                  const colCount = table.rows[0].cells.length;
+                  const tr = document.createElement('tr');
+                  for (let i = 0; i < colCount; i++) {
+                    const td = document.createElement('td');
+                    td.textContent = "";
+                    tr.appendChild(td);
+                  }
+                  table.appendChild(tr);
+                }
 
-               function addTableColumn(el) {
-                 const table = el.querySelector('table');
-                 for (let i = 0; i < table.rows.length; i++) {
-                   const td = document.createElement('td');
-                   td.textContent = "New Cell";
-                   table.rows[i].appendChild(td);
-                 }
-               }
+                function addTableColumn(el) {
+                  const table = el.querySelector('table');
+                  for (let i = 0; i < table.rows.length; i++) {
+                    const td = document.createElement('td');
+                    td.textContent = "";
+                    table.rows[i].appendChild(td);
+                  }
+                }
 
-               function removeTableRow(el) {
-                 const table = el.querySelector('table');
-                 const rowIndex = prompt("Enter row index to remove (0-based):");
-                 if (rowIndex !== null) {
-                   const i = parseInt(rowIndex);
-                   if (!isNaN(i) && i >= 0 && i < table.rows.length) {
+                function removeTableRow(el) {
+                  const table = el.querySelector('table');
+                  const rowIndex = prompt("Enter row index to remove (0-based):");
+                  if (rowIndex !== null) {
+                    const i = parseInt(rowIndex);
+                    if (!isNaN(i) && i >= 0 && i < table.rows.length) {
                      table.deleteRow(i);
                    }
                  }
@@ -537,106 +537,104 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
 
     private String getElementSelectionJs() {
         return """
-               let selectedElement = null;
+                let selectedElement = null;
 
-               canvas.addEventListener('click', (e) => {
-                 if (!editMode) return; // Only select in edit mode
-                 const el = e.target.closest('.draggable');
-                 if (el && canvas.contains(el)) {
-                   // Select this element
-                   selectedElement = el;
-                   showElementToolbar(el);
-                 } else {
-                   // Clicked on canvas but not on element
-                   hideElementToolbar();
-                   selectedElement = null;
-                 }
-               });
+                canvas.addEventListener('contextmenu', (e) => {
+                      if (!editMode) return;
+                      e.preventDefault(); // Prevent default right-click menu
+                      const el = e.target.closest('.draggable');
+                      if (el && canvas.contains(el)) {
+                        selectedElement = el;
+                        showElementToolbar(el);
+                      } else {
+                        hideElementToolbar();
+                        selectedElement = null;
+                      }
+                });
+                    
+                function showElementToolbar(el) {
+                  elementToolbar.innerHTML = '';
+                  elementToolbar.style.display = 'block';
 
-               function showElementToolbar(el) {
-                 elementToolbar.innerHTML = '';
-                 elementToolbar.style.display = 'block';
+                  const type = el.dataset.type;
 
-                 const type = el.dataset.type;
+                  // Common remove button
+                  const removeBtn = document.createElement('button');
+                  removeBtn.textContent = 'Remove';
+                  removeBtn.addEventListener('click', () => removeElement(el));
+                  elementToolbar.appendChild(removeBtn);
 
-                 // Common remove button
-                 const removeBtn = document.createElement('button');
-                 removeBtn.textContent = 'Remove';
-                 removeBtn.addEventListener('click', () => removeElement(el));
-                 elementToolbar.appendChild(removeBtn);
+                  if (type === 'image') {
+                    const changeSrcBtn = document.createElement('button');
+                    changeSrcBtn.textContent = 'Change Source';
+                    changeSrcBtn.addEventListener('click', () => changeImageSource(el));
+                    elementToolbar.appendChild(changeSrcBtn);
+                  }
 
-                 if (type === 'image') {
-                   const changeSrcBtn = document.createElement('button');
-                   changeSrcBtn.textContent = 'Change Source';
-                   changeSrcBtn.addEventListener('click', () => changeImageSource(el));
-                   elementToolbar.appendChild(changeSrcBtn);
-                 }
+                  if (type === 'table') {
+                    const addRowBtn = document.createElement('button');
+                    addRowBtn.textContent = 'Add Row';
+                    addRowBtn.addEventListener('click', () => addTableRow(el));
+                    elementToolbar.appendChild(addRowBtn);
 
-                 if (type === 'table') {
-                   const addRowBtn = document.createElement('button');
-                   addRowBtn.textContent = 'Add Row';
-                   addRowBtn.addEventListener('click', () => addTableRow(el));
-                   elementToolbar.appendChild(addRowBtn);
+                    const addColBtn = document.createElement('button');
+                    addColBtn.textContent = 'Add Col';
+                    addColBtn.addEventListener('click', () => addTableColumn(el));
+                    elementToolbar.appendChild(addColBtn);
 
-                   const addColBtn = document.createElement('button');
-                   addColBtn.textContent = 'Add Col';
-                   addColBtn.addEventListener('click', () => addTableColumn(el));
-                   elementToolbar.appendChild(addColBtn);
+                    const remRowBtn = document.createElement('button');
+                    remRowBtn.textContent = 'Remove Row';
+                    remRowBtn.addEventListener('click', () => removeTableRow(el));
+                    elementToolbar.appendChild(remRowBtn);
 
-                   const remRowBtn = document.createElement('button');
-                   remRowBtn.textContent = 'Remove Row';
-                   remRowBtn.addEventListener('click', () => removeTableRow(el));
-                   elementToolbar.appendChild(remRowBtn);
+                    const remColBtn = document.createElement('button');
+                    remColBtn.textContent = 'Remove Col';
+                    remColBtn.addEventListener('click', () => removeTableColumn(el));
+                    elementToolbar.appendChild(remColBtn);
+                  }
 
-                   const remColBtn = document.createElement('button');
-                   remColBtn.textContent = 'Remove Col';
-                   remColBtn.addEventListener('click', () => removeTableColumn(el));
-                   elementToolbar.appendChild(remColBtn);
-                 }
+                  if (type === 'text') {
+                    const boldBtn = document.createElement('button');
+                    boldBtn.textContent = 'B';
+                    boldBtn.addEventListener('click', () => formatText(el, 'bold'));
+                    elementToolbar.appendChild(boldBtn);
 
-                 if (type === 'text') {
-                   const boldBtn = document.createElement('button');
-                   boldBtn.textContent = 'B';
-                   boldBtn.addEventListener('click', () => formatText(el, 'bold'));
-                   elementToolbar.appendChild(boldBtn);
+                    const italicBtn = document.createElement('button');
+                    italicBtn.textContent = 'I';
+                    italicBtn.addEventListener('click', () => formatText(el, 'italic'));
+                    elementToolbar.appendChild(italicBtn);
 
-                   const italicBtn = document.createElement('button');
-                   italicBtn.textContent = 'I';
-                   italicBtn.addEventListener('click', () => formatText(el, 'italic'));
-                   elementToolbar.appendChild(italicBtn);
+                    const underlineBtn = document.createElement('button');
+                    underlineBtn.textContent = 'U';
+                    underlineBtn.addEventListener('click', () => formatText(el, 'underline'));
+                    elementToolbar.appendChild(underlineBtn);
 
-                   const underlineBtn = document.createElement('button');
-                   underlineBtn.textContent = 'U';
-                   underlineBtn.addEventListener('click', () => formatText(el, 'underline'));
-                   elementToolbar.appendChild(underlineBtn);
+                    const fontSizeBtn = document.createElement('button');
+                    fontSizeBtn.textContent = 'Font Size';
+                    fontSizeBtn.addEventListener('click', () => {
+                      const size = prompt("Enter font size (1-7):", "3");
+                      if (size) formatText(el, 'fontSize', size);
+                    });
+                    elementToolbar.appendChild(fontSizeBtn);
+                  }
 
-                   const fontSizeBtn = document.createElement('button');
-                   fontSizeBtn.textContent = 'Font Size';
-                   fontSizeBtn.addEventListener('click', () => {
-                     const size = prompt("Enter font size (1-7):", "3");
-                     if (size) formatText(el, 'fontSize', size);
-                   });
-                   elementToolbar.appendChild(fontSizeBtn);
-                 }
+                  // Position toolbar
+                  const rect = el.getBoundingClientRect();
+                  elementToolbar.style.left = (rect.left + window.scrollX) + 'px';
+                  elementToolbar.style.top = (rect.top + window.scrollY - elementToolbar.offsetHeight - 5) + 'px';               
+                }
 
-                 // Position toolbar
-                 const rect = el.getBoundingClientRect();
-                 const containerRect = document.querySelector('.container').getBoundingClientRect();
-                 elementToolbar.style.left = (rect.left - containerRect.left) + 'px';
-                 elementToolbar.style.top = (rect.top - containerRect.top - elementToolbar.offsetHeight - 5) + 'px';
-               }
+                function hideElementToolbar() {
+                  elementToolbar.style.display = 'none';
+                  elementToolbar.innerHTML = '';
+                }
 
-               function hideElementToolbar() {
-                 elementToolbar.style.display = 'none';
-                 elementToolbar.innerHTML = '';
-               }
-
-               window.addEventListener('scroll', () => {
-                 if (selectedElement && elementToolbar.style.display === 'block') {
-                   showElementToolbar(selectedElement);
-                 }
-               });
-               """;
+                window.addEventListener('scroll', () => {
+                  if (selectedElement && elementToolbar.style.display === 'block') {
+                    showElementToolbar(selectedElement);
+                  }
+                });
+                """;
     }
 
     private String getInitLayoutJs() {
