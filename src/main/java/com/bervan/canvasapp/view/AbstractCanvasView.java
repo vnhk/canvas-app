@@ -65,6 +65,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                 + getLoadLayoutJs()
                 + getGetCurrentLayoutJs()
                 + getButtonsEventListenersJs()
+                + getUpdateEditModeUiJs() // new function to update UI when toggling modes
                 + getInitLayoutJs();
 
         getElement().executeJs(jsCode, getElement(), body);
@@ -84,8 +85,10 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     // ********* Below are the private methods returning JS code as strings *********
 
     private String getToolbarJs() {
-        // Creates the toolbar and buttons (except for the Save button which is added in getSaveButtonJs())
+        // Creates the toolbar and buttons (including the toggle edit mode button)
         return """
+               let editMode = true; // Global flag indicating if we are in edit mode
+
                const toolbar = document.createElement('div');
                toolbar.id = 'toolbar';
 
@@ -105,11 +108,16 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                saveLayoutBtn.id = 'saveLayout';
                saveLayoutBtn.textContent = 'Save';
 
+               // New toggle button for edit mode
+               const toggleEditBtn = document.createElement('button');
+               toggleEditBtn.id = 'toggleEditMode';
+               toggleEditBtn.textContent = 'Edit Mode: ON';
+
                toolbar.appendChild(addImageBtn);
                toolbar.appendChild(addTableBtn);
                toolbar.appendChild(addTextBtn);
                toolbar.appendChild(saveLayoutBtn);
-
+               toolbar.appendChild(toggleEditBtn);
                """;
     }
 
@@ -178,7 +186,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
     }
 
     private String getMakeDraggableJs() {
-        // Function to make elements draggable
+        // Function to make elements draggable (only when editMode is true)
         return """
                function makeDraggable(el) {
                  let offsetX = 0;
@@ -186,6 +194,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                  let isDown = false;
 
                  el.addEventListener('mousedown', (e) => {
+                   if (!editMode) return; // If not in edit mode, do nothing
                    isDown = true;
                    offsetX = e.clientX - el.offsetLeft;
                    offsetY = e.clientY - el.offsetTop;
@@ -193,7 +202,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                  });
 
                  document.addEventListener('mousemove', (e) => {
-                   if (!isDown) return;
+                   if (!editMode || !isDown) return; // If not in edit mode, no dragging
                    const x = e.clientX - offsetX;
                    const y = e.clientY - offsetY;
                    el.style.left = x + 'px';
@@ -201,6 +210,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                  });
 
                  document.addEventListener('mouseup', () => {
+                   if (!editMode) return;
                    isDown = false;
                    el.style.zIndex = 1;
                  });
@@ -226,6 +236,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
         // Function to create an image element
         return """
                function createImageElement(src, x = 50, y = 50) {
+                 if (!editMode) return; // Only create if in edit mode
                  const el = createDraggableElement();
                  el.dataset.type = "image";
                  const img = document.createElement('img');
@@ -240,8 +251,10 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
 
     private String getCreateTableElementJs() {
         // Function to create a table element
+        // By default, cells will be contentEditable in edit mode only (handled by updateEditModeUI)
         return """
                function createTableElement(tableData, x = 50, y = 50) {
+                 if (!editMode) return; // Only create if in edit mode
                  const el = createDraggableElement();
                  el.dataset.type = "table";
                  const table = document.createElement('table');
@@ -266,8 +279,10 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
 
     private String getCreateTextElementJs() {
         // Function to create a text (textarea) element
+        // Text area editability is handled by updateEditModeUI
         return """
                function createTextElement(textValue, x = 50, y = 50) {
+                 if (!editMode) return; // Only create if in edit mode
                  const el = createDraggableElement();
                  el.dataset.type = "text";
                  const textarea = document.createElement('textarea');
@@ -295,6 +310,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                      createTextElement(content, x, y);
                    }
                  });
+                 updateEditModeUI(); // Update UI based on current edit mode after loading
                }
                """;
     }
@@ -341,27 +357,66 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
         // Event listeners for the buttons
         return """
                addImageBtn.addEventListener('click', () => {
-                 createImageElement("https://via.placeholder.com/150");
+                 if (editMode) {
+                   createImageElement("https://via.placeholder.com/150");
+                   updateEditModeUI(); 
+                 }
                });
 
                addTableBtn.addEventListener('click', () => {
-                 const defaultTable = [
-                   ["R1C1", "R1C2", "R1C3"],
-                   ["R2C1", "R2C2", "R2C3"],
-                   ["R3C1", "R3C2", "R3C3"]
-                 ];
-                 createTableElement(defaultTable);
+                 if (editMode) {
+                   const defaultTable = [
+                     ["R1C1", "R1C2", "R1C3"],
+                     ["R2C1", "R2C2", "R2C3"],
+                     ["R3C1", "R3C2", "R3C3"]
+                   ];
+                   createTableElement(defaultTable);
+                   updateEditModeUI();
+                 }
                });
 
                addTextBtn.addEventListener('click', () => {
-                 createTextElement("...");
+                 if (editMode) {
+                   createTextElement("...");
+                   updateEditModeUI();
+                 }
                });
 
                saveLayoutBtn.addEventListener('click', () => {
+                 // Saving can happen regardless of edit mode
                  const layoutData = getCurrentLayout();
                  const jsonString = JSON.stringify(layoutData);
                  $0.$server.saveLayout(jsonString);
                });
+
+               // Toggle edit mode event listener
+               toggleEditBtn.addEventListener('click', () => {
+                 editMode = !editMode;
+                 toggleEditBtn.textContent = 'Edit Mode: ' + (editMode ? 'ON' : 'OFF');
+                 updateEditModeUI();
+               });
+               """;
+    }
+
+    private String getUpdateEditModeUiJs() {
+        // This function updates the UI elements based on the current edit mode
+        return """
+               function updateEditModeUI() {
+                 // Update text areas
+                 const allTextareas = canvas.querySelectorAll('.draggable[data-type="text"] textarea');
+                 allTextareas.forEach(ta => {
+                   ta.readOnly = !editMode; // When view mode, text is not editable
+                 });
+
+                 // Update tables
+                 const allTables = canvas.querySelectorAll('.draggable[data-type="table"] table');
+                 allTables.forEach(t => {
+                   const tds = t.querySelectorAll('td');
+                   tds.forEach(td => {
+                     td.contentEditable = editMode; // Editable only in edit mode
+                   });
+                 });
+               }
                """;
     }
 
@@ -375,6 +430,8 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                  } catch (e) {
                    console.error("Invalid initial layout JSON", e);
                  }
+               } else {
+                 updateEditModeUI(); // Ensure UI is correct even if empty layout
                }
                """;
     }
