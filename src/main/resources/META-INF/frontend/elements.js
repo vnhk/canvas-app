@@ -52,7 +52,6 @@ window.createTextElement = function (textValue, x = 50, y = 50) {
     const textDiv = document.createElement('div');
     textDiv.contentEditable = "true";
     textDiv.innerHTML = textValue;
-    textDiv.style.height = "100%";
     el.appendChild(textDiv);
     el.style.left = x + 'px';
     el.style.top = y + 'px';

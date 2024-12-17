@@ -50,8 +50,8 @@ window.injectStyles = function() {
     }
 
     .draggable[data-type="text"] div[contenteditable="true"] {
-      width: 200px;
-      height: 100px;
+      width: 100%;
+      height: 100%;
       border: none;
       outline: none;
     }
