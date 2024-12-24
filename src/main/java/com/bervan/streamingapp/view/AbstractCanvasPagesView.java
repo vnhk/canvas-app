@@ -1,7 +1,7 @@
-package com.bervan.canvasapp.view;
+package com.bervan.streamingapp.view;
 
-import com.bervan.canvasapp.Canvas;
-import com.bervan.canvasapp.CanvasService;
+import com.bervan.streamingapp.Canvas;
+import com.bervan.streamingapp.CanvasService;
 import com.bervan.common.AbstractTableView;
 import com.bervan.core.model.BervanLogger;
 import com.vaadin.flow.component.grid.Grid;

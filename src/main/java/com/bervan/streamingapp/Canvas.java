@@ -1,4 +1,4 @@
-package com.bervan.canvasapp;
+package com.bervan.streamingapp;
 
 import com.bervan.common.model.BervanBaseEntity;
 import com.bervan.common.model.PersistableTableData;
