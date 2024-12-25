@@ -7,9 +7,9 @@ public final class CanvasAppPageLayout extends MenuNavigationComponent {
     public CanvasAppPageLayout(boolean isEdit, String canvasName) {
         super(AbstractCanvasPagesView.ROUTE_NAME);
 
-        addButton(menuButtonsRow, AbstractCanvasPagesView.ROUTE_NAME, "List");
+        addButtonIfVisible(menuButtonsRow, AbstractCanvasPagesView.ROUTE_NAME, "List");
         if (isEdit) {
-            addButton(menuButtonsRow, AbstractCanvasView.ROUTE_NAME, canvasName);
+            addButtonIfVisible(menuButtonsRow, AbstractCanvasView.ROUTE_NAME, canvasName);
         }
 
         add(menuButtonsRow);
