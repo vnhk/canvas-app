@@ -37,12 +37,6 @@ public class CanvasService extends BaseService<UUID, Canvas> {
         return repository.save(canvas);
     }
 
-    @Override
-    @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
-    public Set<Canvas> load() {
-        return new HashSet<>(repository.findByDeletedFalseAndOwnersId(AuthService.getLoggedUserId()));
-    }
-
     @PostFilter("(T(com.bervan.common.service.AuthService).hasAccess(filterObject.owners))")
     public List<Canvas> loadByName(String canvasName) {
         return repository.findByNameAndDeletedFalseAndOwnersId(canvasName, AuthService.getLoggedUserId());
