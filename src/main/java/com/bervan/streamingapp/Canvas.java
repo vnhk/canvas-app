@@ -8,6 +8,7 @@ import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -22,7 +23,6 @@ import java.util.UUID;
 )
 public class Canvas extends BervanBaseEntity<UUID> implements PersistableTableData<UUID>, ExcelIEEntity<UUID> {
     @Id
-    @GeneratedValue
     private UUID id;
     @Size(max = 100)
     @VaadinTableColumn(internalName = "name", displayName = "Name")
