@@ -23,6 +23,8 @@ window.injectStyles = function() {
       width: 100%;
       height: 80vh;
       overflow: hidden;
+      color: white;
+      background-color: black;
       border: 1px solid #ccc;
     }
 
