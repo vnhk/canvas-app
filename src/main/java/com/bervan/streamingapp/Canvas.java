@@ -91,7 +91,7 @@ public class Canvas extends BervanBaseEntity<UUID> implements PersistableTableDa
         this.creationDate = creationDate;
     }
 
-    public Boolean getDeleted() {
+    public Boolean isDeleted() {
         if (deleted == null) {
             return false;
         }
