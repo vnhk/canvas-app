@@ -26,16 +26,18 @@ public abstract class AbstractCanvasPagesView extends AbstractTableView<UUID, Ca
     @Override
     protected Grid<Canvas> getGrid() {
         Grid<Canvas> grid = new Grid<>(Canvas.class, false);
+        buildGridAutomatically(grid);
 
+        return grid;
+    }
+
+    @Override
+    protected void preColumnAutoCreation(Grid<Canvas> grid) {
         grid.addComponentColumn(entity -> {
                     Icon linkIcon = new Icon(VaadinIcon.LINK);
                     linkIcon.getStyle().set("cursor", "pointer");
                     return new Anchor(ROUTE_NAME + "/" + entity.getName(), new HorizontalLayout(linkIcon));
                 }).setKey("link")
                 .setResizable(true);
-
-        buildGridAutomatically(grid);
-
-        return grid;
     }
 }
