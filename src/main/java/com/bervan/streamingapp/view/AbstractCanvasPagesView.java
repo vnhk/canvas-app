@@ -1,9 +1,9 @@
 package com.bervan.streamingapp.view;
 
-import com.bervan.streamingapp.Canvas;
-import com.bervan.streamingapp.CanvasService;
 import com.bervan.common.AbstractTableView;
 import com.bervan.core.model.BervanLogger;
+import com.bervan.streamingapp.Canvas;
+import com.bervan.streamingapp.CanvasService;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.icon.Icon;
@@ -38,6 +38,7 @@ public abstract class AbstractCanvasPagesView extends AbstractTableView<UUID, Ca
                     linkIcon.getStyle().set("cursor", "pointer");
                     return new Anchor(ROUTE_NAME + "/" + entity.getName(), new HorizontalLayout(linkIcon));
                 }).setKey("link")
-                .setResizable(true);
+                .setWidth("10px")
+                .setResizable(false);
     }
 }
