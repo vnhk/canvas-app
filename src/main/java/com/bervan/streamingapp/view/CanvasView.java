@@ -1,18 +1,13 @@
 package com.bervan.streamingapp.view;
 
+import com.bervan.common.AbstractPageView;
 import com.bervan.streamingapp.Canvas;
 import com.bervan.streamingapp.CanvasService;
-import com.bervan.common.AbstractPageView;
-import com.bervan.core.model.BervanLogger;
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
-
-import java.util.List;
-import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
 
 @JsModule("./styles.js")
@@ -22,39 +17,25 @@ import java.util.UUID;
 @JsModule("./elements.js")
 @JsModule("./layout.js")
 @JsModule("./selection.js")
-public abstract class AbstractCanvasView extends AbstractPageView implements HasUrlParameter<String> {
+public class CanvasView extends AbstractPageView {
     public static final String ROUTE_NAME = AbstractCanvasPagesView.ROUTE_NAME + "/";
     private final CanvasService service;
-    private final BervanLogger logger;
+    @Setter
+    @Getter
     private Canvas canvasEntity;
 
-    public AbstractCanvasView(CanvasService service, BervanLogger logger) {
+    public CanvasView(CanvasService service, Canvas canvasEntity) {
         super();
         this.service = service;
-        this.logger = logger;
+        this.canvasEntity = canvasEntity;
+        refresh();
     }
 
-    @Override
-    public void setParameter(BeforeEvent event, String s) {
-        String canvasName = event.getRouteParameters().get("___url_parameter").orElse(UUID.randomUUID().toString());
-        init(canvasName);
-    }
-
-    private void init(String name) {
-        List<Canvas> optionalEntity = service.loadByName(name);
-
-        if (!optionalEntity.isEmpty()) {
-            canvasEntity = optionalEntity.get(0);
-            add(new CanvasAppPageLayout(true, canvasEntity.getName()));
-        } else {
-            showErrorNotification("Canvas does not exist!");
+    public void refresh() {
+        if (canvasEntity == null) {
+            canvasEntity = new Canvas();
         }
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-
+        removeAll();
         Div container = new Div();
         container.addClassName("container");
         container.setWidth("98%");
@@ -84,7 +65,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                           const jsonString = JSON.stringify(layoutData);
                           $0.$server.saveLayout(jsonString);
                         });
-                            
+                        
                         toggleEditBtn.addEventListener('click', () => {
                           editMode = !editMode;
                           toggleEditBtn.textContent = 'Edit Mode: ' + (editMode ? 'ON' : 'OFF');
@@ -94,14 +75,14 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                           }
                           updateEditModeUI();
                         });
-                            
+                        
                         addImageBtn.addEventListener('click', () => {
                           if (editMode) {
                             createImageElement("https://via.placeholder.com/150");
                             updateEditModeUI();
                           }
                         });
-                            
+                        
                         addTableBtn.addEventListener('click', () => {
                           if (editMode) {
                             const defaultTable = [
@@ -113,7 +94,7 @@ public abstract class AbstractCanvasView extends AbstractPageView implements Has
                             updateEditModeUI();
                           }
                         });
-                            
+                        
                         addTextBtn.addEventListener('click', () => {
                           if (editMode) {
                             createTextElement("Edit me");
