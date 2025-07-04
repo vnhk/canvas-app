@@ -1,14 +1,11 @@
-package com.bervan.streamingapp;
+package com.bervan.canvas;
 
 import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.common.model.PersistableTableData;
-import com.bervan.common.model.VaadinTableColumn;
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -21,11 +18,10 @@ import java.util.UUID;
 @Table(
         uniqueConstraints = @UniqueConstraint(columnNames = {"name", "owner.id"})
 )
-public class Canvas extends BervanBaseEntity<UUID> implements PersistableTableData<UUID>, ExcelIEEntity<UUID> {
+public class Canvas extends BervanBaseEntity<UUID> implements ExcelIEEntity<UUID> {
     @Id
     private UUID id;
     @Size(max = 100)
-    @VaadinTableColumn(internalName = "name", displayName = "Name")
     private String name;
     @Lob
     @Size(max = 5000000)
@@ -33,6 +29,7 @@ public class Canvas extends BervanBaseEntity<UUID> implements PersistableTableDa
     private String content;
     private LocalDateTime modificationDate;
     private LocalDateTime creationDate;
+    private String category;
 
     private Boolean deleted = false;
 
@@ -44,12 +41,15 @@ public class Canvas extends BervanBaseEntity<UUID> implements PersistableTableDa
 
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public String getCategory() {
+        return category;
     }
 
-    @Override
-    public String getTableFilterableColumnValue() {
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getName() {
         return name;
     }
 
@@ -57,12 +57,12 @@ public class Canvas extends BervanBaseEntity<UUID> implements PersistableTableDa
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public UUID getId() {
         return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     @Override

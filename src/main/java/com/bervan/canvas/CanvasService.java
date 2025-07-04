@@ -1,4 +1,4 @@
-package com.bervan.streamingapp;
+package com.bervan.canvas;
 
 import com.bervan.common.search.SearchService;
 import com.bervan.common.service.AuthService;
@@ -7,9 +7,7 @@ import com.bervan.core.model.BervanLogger;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Service

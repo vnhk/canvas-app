@@ -1,4 +1,4 @@
-package com.bervan.streamingapp;
+package com.bervan.canvas;
 
 import com.bervan.history.model.BaseRepository;
 

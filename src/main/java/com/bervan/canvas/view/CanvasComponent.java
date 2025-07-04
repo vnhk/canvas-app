@@ -1,13 +1,16 @@
-package com.bervan.streamingapp.view;
+package com.bervan.canvas.view;
 
-import com.bervan.common.AbstractPageView;
-import com.bervan.streamingapp.Canvas;
-import com.bervan.streamingapp.CanvasService;
+import com.bervan.canvas.Canvas;
+import com.bervan.canvas.CanvasService;
+import com.bervan.common.AbstractBervanEntityView;
+import com.bervan.common.EmptyLayout;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.UUID;
 
 
 @JsModule("./styles.js")
@@ -17,15 +20,14 @@ import lombok.Setter;
 @JsModule("./elements.js")
 @JsModule("./layout.js")
 @JsModule("./selection.js")
-public class CanvasView extends AbstractPageView {
-    public static final String ROUTE_NAME = AbstractCanvasPagesView.ROUTE_NAME + "/";
+public class CanvasComponent extends AbstractBervanEntityView<UUID, Canvas> {
     private final CanvasService service;
     @Setter
     @Getter
     private Canvas canvasEntity;
 
-    public CanvasView(CanvasService service, Canvas canvasEntity) {
-        super();
+    public CanvasComponent(CanvasService service, Canvas canvasEntity) {
+        super(new EmptyLayout(), service, Canvas.class);
         this.service = service;
         this.canvasEntity = canvasEntity;
         refresh();

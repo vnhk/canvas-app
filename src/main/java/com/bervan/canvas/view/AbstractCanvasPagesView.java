@@ -1,9 +1,9 @@
-package com.bervan.streamingapp.view;
+package com.bervan.canvas.view;
 
 import com.bervan.common.AbstractPageView;
 import com.bervan.common.search.SearchRequest;
-import com.bervan.streamingapp.Canvas;
-import com.bervan.streamingapp.CanvasService;
+import com.bervan.canvas.Canvas;
+import com.bervan.canvas.CanvasService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -39,16 +39,16 @@ public abstract class AbstractCanvasPagesView extends AbstractPageView {
         middlePanel.addClassName("canvas-middle-panel");
 
         // Main canvas view area
-        CanvasView canvasView = new CanvasView(service, null); // initially null
-        canvasView.setSizeFull();
-        canvasView.addClassName("canvas-main-canvas");
+        CanvasComponent canvasComponent = new CanvasComponent(service, null); // initially null
+        canvasComponent.setSizeFull();
+        canvasComponent.addClassName("canvas-main-canvas");
 
         // Create a list of buttons for each notebook
         for (Canvas notebook : notebooks) {
             Button notebookButton = new Button(notebook.getName(), click -> {
                 // On click: refresh the canvas view with selected notebook
-                canvasView.setCanvasEntity(notebook);
-                canvasView.refresh();
+                canvasComponent.setCanvasEntity(notebook);
+                canvasComponent.refresh();
             });
             notebookButton.setWidthFull();
             notebookButton.addClassName("canvas-notebook-button");
@@ -56,8 +56,8 @@ public abstract class AbstractCanvasPagesView extends AbstractPageView {
         }
 
         // Add all panels to the main layout
-        mainLayout.add(leftPanel, middlePanel, canvasView);
-        mainLayout.setFlexGrow(1, canvasView); // allow canvasView to expand
+        mainLayout.add(leftPanel, middlePanel, canvasComponent);
+        mainLayout.setFlexGrow(1, canvasComponent); // allow canvasView to expand
 
         // Add main layout to the view
         add(mainLayout);
