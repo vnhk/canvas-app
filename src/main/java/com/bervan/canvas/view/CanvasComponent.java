@@ -30,7 +30,6 @@ public class CanvasComponent extends AbstractBervanEntityView<UUID, Canvas> {
         super(new EmptyLayout(), service, Canvas.class);
         this.service = service;
         this.canvasEntity = canvasEntity;
-        renderCommonComponents();
         refresh();
     }
 

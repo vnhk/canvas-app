@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -51,4 +52,7 @@ public class CanvasService extends BaseService<UUID, Canvas> {
         return historyRepository.findAll();
     }
 
+    public Set<String> findAllCategories() {
+        return repository.findAllCategories();
+    }
 }
