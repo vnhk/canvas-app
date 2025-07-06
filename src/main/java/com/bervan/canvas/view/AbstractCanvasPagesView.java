@@ -3,6 +3,7 @@ package com.bervan.canvas.view;
 import com.bervan.canvas.Canvas;
 import com.bervan.canvas.CanvasService;
 import com.bervan.common.AbstractBervanEntityView;
+import com.bervan.common.BervanButton;
 import com.bervan.common.EmptyLayout;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.Operator;
@@ -52,7 +53,7 @@ public abstract class AbstractCanvasPagesView extends AbstractBervanEntityView<U
             if (category == null || category.isBlank()) {
                 continue;
             }
-            Button categoryButton = new Button(category, (event) -> {
+            BervanButton categoryButton = new BervanButton(category, (event) -> {
                 canvasCategoryOnClickLogic(category, middlePanel, canvasComponent);
             });
             categoryButton.addClassName("canvas-notebook-button");
@@ -69,7 +70,6 @@ public abstract class AbstractCanvasPagesView extends AbstractBervanEntityView<U
 
     private void canvasCategoryOnClickLogic(String category, VerticalLayout middlePanel, CanvasComponent canvasComponent) {
         middlePanel.removeAll();
-        canvasComponent.removeAll();
         // Load all notebooks with a SearchRequest and Pageable based on category
         Set<Canvas> notebooks;
         if (category == null) {
@@ -81,7 +81,7 @@ public abstract class AbstractCanvasPagesView extends AbstractBervanEntityView<U
         addButton.setWidthFull();
         middlePanel.add(addButton);
         for (Canvas notebook : notebooks) {
-            Button notebookButton = new Button(notebook.getName(), click -> {
+            BervanButton notebookButton = new BervanButton(notebook.getName(), click -> {
                 // On click: refresh the canvas view with selected notebook
                 canvasComponent.setCanvasEntity(notebook);
                 canvasComponent.refresh();

@@ -5,10 +5,12 @@ import com.bervan.canvas.CanvasService;
 import com.bervan.common.AbstractBervanEntityView;
 import com.bervan.common.EmptyLayout;
 import com.vaadin.flow.component.ClientCallable;
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import lombok.Getter;
-import lombok.Setter;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import java.util.UUID;
 
@@ -22,15 +24,18 @@ import java.util.UUID;
 @JsModule("./selection.js")
 public class CanvasComponent extends AbstractBervanEntityView<UUID, Canvas> {
     private final CanvasService service;
-    @Setter
-    @Getter
     private Canvas canvasEntity;
 
     public CanvasComponent(CanvasService service, Canvas canvasEntity) {
         super(new EmptyLayout(), service, Canvas.class);
         this.service = service;
-        this.canvasEntity = canvasEntity;
+        setCanvasEntity(canvasEntity);
         refresh();
+    }
+
+    public void setCanvasEntity(Canvas canvasEntity) {
+        this.canvasEntity = canvasEntity;
+        this.item = canvasEntity;
     }
 
     public void refresh() {
@@ -39,6 +44,11 @@ public class CanvasComponent extends AbstractBervanEntityView<UUID, Canvas> {
         }
         removeAll();
         Div container = new Div();
+        container.add(new HorizontalLayout(JustifyContentMode.BETWEEN,
+                new HorizontalLayout(new H4("Name:"), new Text(canvasEntity.getName())),
+                new HorizontalLayout(new H4("Category:"), new Text(canvasEntity.getCategory()))));
+        container.add(editButton);
+        container.add(new Hr());
         container.addClassName("container");
         container.setWidth("98%");
         add(container);
