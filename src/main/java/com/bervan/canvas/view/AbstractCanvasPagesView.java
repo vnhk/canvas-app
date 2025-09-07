@@ -2,9 +2,9 @@ package com.bervan.canvas.view;
 
 import com.bervan.canvas.Canvas;
 import com.bervan.canvas.CanvasService;
-import com.bervan.common.AbstractBervanEntityView;
-import com.bervan.common.BervanButton;
-import com.bervan.common.EmptyLayout;
+import com.bervan.common.view.AbstractBervanEntityView;
+import com.bervan.common.component.BervanButton;
+import com.bervan.common.view.EmptyLayout;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.Operator;
 import com.bervan.common.search.model.SearchOperation;

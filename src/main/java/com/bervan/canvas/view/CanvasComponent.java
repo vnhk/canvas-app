@@ -2,8 +2,8 @@ package com.bervan.canvas.view;
 
 import com.bervan.canvas.Canvas;
 import com.bervan.canvas.CanvasService;
-import com.bervan.common.AbstractBervanEntityView;
-import com.bervan.common.EmptyLayout;
+import com.bervan.common.view.AbstractBervanEntityView;
+import com.bervan.common.view.EmptyLayout;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.JsModule;
