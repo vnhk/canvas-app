@@ -2,12 +2,12 @@ package com.bervan.canvas.view;
 
 import com.bervan.canvas.Canvas;
 import com.bervan.canvas.CanvasService;
-import com.bervan.common.view.AbstractBervanEntityView;
 import com.bervan.common.component.BervanButton;
-import com.bervan.common.view.EmptyLayout;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.Operator;
 import com.bervan.common.search.model.SearchOperation;
+import com.bervan.common.view.AbstractBervanEntityView;
+import com.bervan.common.view.EmptyLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -15,6 +15,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
+import java.util.HashMap;
 import java.util.Set;
 import java.util.UUID;
 
