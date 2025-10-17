@@ -1,7 +1,7 @@
 package com.bervan.canvas;
 
 import com.bervan.common.model.BervanBaseEntity;
-import com.bervan.common.model.VaadinBervanColumn;
+
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
 import com.bervan.ieentities.ExcelIEEntity;
@@ -23,7 +23,6 @@ public class Canvas extends BervanBaseEntity<UUID> implements ExcelIEEntity<UUID
     @Id
     private UUID id;
     @Size(max = 100)
-    @VaadinBervanColumn(internalName = "name", displayName = "Name")
     private String name;
     @Lob
     @Size(max = 5000000)
@@ -31,7 +30,6 @@ public class Canvas extends BervanBaseEntity<UUID> implements ExcelIEEntity<UUID
     private String content;
     private LocalDateTime modificationDate;
     private LocalDateTime creationDate;
-    @VaadinBervanColumn(internalName = "category", displayName = "Category")
     private String category;
 
     private Boolean deleted = false;

@@ -1,0 +1,18 @@
+columns:
+  - field: name
+    displayName: "Name"
+    internalName: "name"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true
+    min: 3
+    max: 255
+
+  - field: category
+    displayName: "Category"
+    internalName: "category"
+    inSaveForm: true
+    inEditForm: true
+    inTable: true
+    required: true

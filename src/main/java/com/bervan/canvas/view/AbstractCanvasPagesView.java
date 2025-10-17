@@ -3,6 +3,7 @@ package com.bervan.canvas.view;
 import com.bervan.canvas.Canvas;
 import com.bervan.canvas.CanvasService;
 import com.bervan.common.component.BervanButton;
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.search.SearchRequest;
 import com.bervan.common.search.model.Operator;
 import com.bervan.common.search.model.SearchOperation;
@@ -15,22 +16,21 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
-import java.util.HashMap;
 import java.util.Set;
 import java.util.UUID;
 
 public abstract class AbstractCanvasPagesView extends AbstractBervanEntityView<UUID, Canvas> {
     public static final String ROUTE_NAME = "/canvas-app/all-canvas-pages";
 
-    public AbstractCanvasPagesView(@Autowired CanvasService service) {
-        super(new EmptyLayout(), service, Canvas.class);
+    public AbstractCanvasPagesView(@Autowired CanvasService service, BervanViewConfig bervanViewConfig) {
+        super(new EmptyLayout(), service, bervanViewConfig, Canvas.class);
         // Create main horizontal layout filling the whole view
         HorizontalLayout mainLayout = new HorizontalLayout();
         mainLayout.setSizeFull();
         mainLayout.addClassName("canvas-main-layout");
 
         // Main canvas view area
-        CanvasComponent canvasComponent = new CanvasComponent(service, null); // initially null
+        CanvasComponent canvasComponent = new CanvasComponent(service, null, this.bervanViewConfig); // initially null
         canvasComponent.setSizeFull();
         canvasComponent.addClassName("canvas-main-canvas");
 

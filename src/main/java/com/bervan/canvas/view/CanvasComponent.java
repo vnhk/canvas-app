@@ -2,6 +2,7 @@ package com.bervan.canvas.view;
 
 import com.bervan.canvas.Canvas;
 import com.bervan.canvas.CanvasService;
+import com.bervan.common.config.BervanViewConfig;
 import com.bervan.common.view.AbstractBervanEntityView;
 import com.bervan.common.view.EmptyLayout;
 import com.vaadin.flow.component.ClientCallable;
@@ -12,7 +13,6 @@ import com.vaadin.flow.component.html.H4;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
-import java.util.HashMap;
 import java.util.UUID;
 
 
@@ -27,8 +27,8 @@ public class CanvasComponent extends AbstractBervanEntityView<UUID, Canvas> {
     private final CanvasService service;
     private Canvas canvasEntity;
 
-    public CanvasComponent(CanvasService service, Canvas canvasEntity) {
-        super(new EmptyLayout(), service, Canvas.class);
+    public CanvasComponent(CanvasService service, Canvas canvasEntity, BervanViewConfig bervanViewConfig) {
+        super(new EmptyLayout(), service, bervanViewConfig, Canvas.class);
         this.service = service;
         setCanvasEntity(canvasEntity);
         refresh();
