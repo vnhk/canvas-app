@@ -3,7 +3,6 @@ package com.bervan.canvas;
 import com.bervan.common.search.SearchService;
 import com.bervan.common.service.AuthService;
 import com.bervan.common.service.BaseService;
-import com.bervan.core.model.BervanLogger;
 import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.stereotype.Service;
 
@@ -15,16 +14,13 @@ import java.util.UUID;
 public class CanvasService extends BaseService<UUID, Canvas> {
     private final CanvasRepository repository;
     private final HistoryCanvasRepository historyRepository;
-    private final BervanLogger logger;
 
     public CanvasService(CanvasRepository repository,
                          HistoryCanvasRepository historyRepository,
-                         SearchService searchService,
-                         BervanLogger logger) {
+                         SearchService searchService) {
         super(repository, searchService);
         this.repository = repository;
         this.historyRepository = historyRepository;
-        this.logger = logger;
     }
 
     @Override
