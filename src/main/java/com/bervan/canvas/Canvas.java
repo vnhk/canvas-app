@@ -1,6 +1,6 @@
 package com.bervan.canvas;
 
-import com.bervan.common.model.BervanBaseEntity;
+import com.bervan.common.model.BervanOwnedBaseEntity;
 
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @Table(
         uniqueConstraints = @UniqueConstraint(columnNames = {"name", "owner.id"})
 )
-public class Canvas extends BervanBaseEntity<UUID> implements ExcelIEEntity<UUID> {
+public class Canvas extends BervanOwnedBaseEntity<UUID> implements ExcelIEEntity<UUID> {
     @Id
     private UUID id;
     @Size(max = 100)
