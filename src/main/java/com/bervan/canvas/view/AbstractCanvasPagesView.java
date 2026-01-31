@@ -79,8 +79,8 @@ public abstract class AbstractCanvasPagesView extends AbstractBervanEntityView<U
             notebooks = categorySearch(category);
         }
         // Create a list of buttons for each notebook
-        addButton.setWidthFull();
-        middlePanel.add(addButton);
+        newItemButton.setWidthFull();
+        middlePanel.add(newItemButton);
         for (Canvas notebook : notebooks) {
             BervanButton notebookButton = new BervanButton(notebook.getName(), click -> {
                 // On click: refresh the canvas view with selected notebook
