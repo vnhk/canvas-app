@@ -11,8 +11,13 @@ import com.bervan.common.view.AbstractBervanEntityView;
 import com.bervan.common.view.EmptyLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
@@ -22,74 +27,149 @@ import java.util.UUID;
 public abstract class AbstractCanvasPagesView extends AbstractBervanEntityView<UUID, Canvas> {
     public static final String ROUTE_NAME = "/canvas-app/all-canvas-pages";
 
+    private final CanvasService canvasService;
+    private VerticalLayout notebooksSection;
+    private CanvasComponent canvasComponent;
+    private String selectedCategory = null;
+    private Div categoriesSection;
+
     public AbstractCanvasPagesView(@Autowired CanvasService service, BervanViewConfig bervanViewConfig) {
         super(new EmptyLayout(), service, bervanViewConfig, Canvas.class);
-        // Create main horizontal layout filling the whole view
+        this.canvasService = service;
+
         HorizontalLayout mainLayout = new HorizontalLayout();
         mainLayout.setSizeFull();
         mainLayout.addClassName("canvas-main-layout");
+        mainLayout.getStyle().set("position", "relative");
 
-        // Main canvas view area
-        CanvasComponent canvasComponent = new CanvasComponent(service, null, this.bervanViewConfig); // initially null
+        // Sidebar wrapper (collapsible)
+        Div sidebarWrapper = new Div();
+        sidebarWrapper.addClassName("canvas-sidebar");
+
+        // Toggle button
+        Button toggleBtn = new Button(new Icon(VaadinIcon.MENU));
+        toggleBtn.addClassName("canvas-sidebar-toggle");
+        toggleBtn.addClickListener(e -> {
+            sidebarWrapper.getElement().executeJs(
+                    "this.classList.toggle('collapsed');"
+            );
+        });
+
+        // Categories section
+        categoriesSection = new Div();
+        categoriesSection.addClassName("canvas-categories-section");
+
+        Span categoriesTitle = new Span("Categories");
+        categoriesTitle.addClassName("canvas-section-title");
+        categoriesSection.add(categoriesTitle);
+
+        buildCategoriesList();
+
+        // Notebooks section
+        notebooksSection = new VerticalLayout();
+        notebooksSection.setPadding(false);
+        notebooksSection.setSpacing(false);
+        notebooksSection.addClassName("canvas-notebooks-section");
+
+        Span notebooksTitle = new Span("Notebooks");
+        notebooksTitle.addClassName("canvas-section-title");
+        notebooksSection.add(notebooksTitle);
+
+        // Sidebar content
+        Div sidebarContent = new Div();
+        sidebarContent.addClassName("canvas-sidebar-content");
+        sidebarContent.add(categoriesSection, new Hr(), notebooksSection);
+
+        sidebarWrapper.add(toggleBtn, sidebarContent);
+
+        // Canvas area
+        canvasComponent = new CanvasComponent(service, null, this.bervanViewConfig);
         canvasComponent.setSizeFull();
         canvasComponent.addClassName("canvas-main-canvas");
 
-        // Middle panel: list of notebooks
-        VerticalLayout middlePanel = new VerticalLayout();
-        middlePanel.setWidth("250px");
-        middlePanel.addClassName("canvas-middle-panel");
+        mainLayout.add(sidebarWrapper, canvasComponent);
+        mainLayout.setFlexGrow(1, canvasComponent);
 
-        // Left panel: main categories placeholder
-        Div leftPanel = new Div();
-        leftPanel.setWidth("250px");
-        Button noCategory = new Button("No category", (event) -> {
-            canvasCategoryOnClickLogic(null, middlePanel, canvasComponent);
+        add(mainLayout);
+    }
+
+    private void buildCategoriesList() {
+        // Clear existing buttons (keep title)
+        categoriesSection.getChildren()
+                .filter(c -> c instanceof Button || c instanceof BervanButton)
+                .toList()
+                .forEach(categoriesSection::remove);
+
+        Button noCategory = new Button("All / No category", e -> {
+            selectedCategory = null;
+            loadNotebooks(null);
         });
         noCategory.addClassName("canvas-notebook-button");
-        leftPanel.add(noCategory);
-        leftPanel.addClassName("canvas-left-panel");
+        categoriesSection.add(noCategory);
 
-        Set<String> allCategories = service.findAllCategories();
+        Set<String> allCategories = canvasService.findAllCategories();
         for (String category : allCategories) {
             if (category == null || category.isBlank()) {
                 continue;
             }
-            BervanButton categoryButton = new BervanButton(category, (event) -> {
-                canvasCategoryOnClickLogic(category, middlePanel, canvasComponent);
+            BervanButton categoryButton = new BervanButton(category, e -> {
+                selectedCategory = category;
+                loadNotebooks(category);
             });
             categoryButton.addClassName("canvas-notebook-button");
-            leftPanel.add(categoryButton);
+            categoriesSection.add(categoryButton);
         }
 
-        // Add all panels to the main layout
-        mainLayout.add(leftPanel, middlePanel, canvasComponent);
-        mainLayout.setFlexGrow(1, canvasComponent); // allow canvasView to expand
-
-        // Add main layout to the view
-        add(mainLayout);
+        // Add new category inline
+        Div addCategoryRow = new Div();
+        addCategoryRow.addClassName("canvas-add-category-row");
+        TextField newCatField = new TextField();
+        newCatField.setPlaceholder("New category...");
+        newCatField.setWidthFull();
+        newCatField.addClassName("canvas-new-category-field");
+        Button addCatBtn = new Button(new Icon(VaadinIcon.PLUS), e -> {
+            String val = newCatField.getValue();
+            if (val != null && !val.isBlank()) {
+                Canvas c = new Canvas();
+                c.setCategory(val.trim());
+                c.setName("New notebook");
+                canvasService.save(c);
+                newCatField.clear();
+                buildCategoriesList();
+                selectedCategory = val.trim();
+                loadNotebooks(val.trim());
+            }
+        });
+        addCatBtn.addClassName("canvas-add-btn");
+        addCategoryRow.add(newCatField, addCatBtn);
+        categoriesSection.add(addCategoryRow);
     }
 
-    private void canvasCategoryOnClickLogic(String category, VerticalLayout middlePanel, CanvasComponent canvasComponent) {
-        middlePanel.removeAll();
-        // Load all notebooks with a SearchRequest and Pageable based on category
+    private void loadNotebooks(String category) {
+        notebooksSection.removeAll();
+
+        Span notebooksTitle = new Span(category != null ? category : "All notebooks");
+        notebooksTitle.addClassName("canvas-section-title");
+        notebooksSection.add(notebooksTitle);
+
         Set<Canvas> notebooks;
         if (category == null) {
             notebooks = noCategorySearch();
         } else {
             notebooks = categorySearch(category);
         }
-        // Create a list of buttons for each notebook
+
         newItemButton.setWidthFull();
-        middlePanel.add(newItemButton);
+        notebooksSection.add(newItemButton);
+
         for (Canvas notebook : notebooks) {
             BervanButton notebookButton = new BervanButton(notebook.getName(), click -> {
-                // On click: refresh the canvas view with selected notebook
                 canvasComponent.setCanvasEntity(notebook);
                 canvasComponent.refresh();
             });
             notebookButton.setWidthFull();
             notebookButton.addClassName("canvas-notebook-button");
-            middlePanel.add(notebookButton);
+            notebooksSection.add(notebookButton);
         }
     }
 

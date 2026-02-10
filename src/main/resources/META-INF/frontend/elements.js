@@ -1,16 +1,5 @@
-// Create a draggable element base
-window.createDraggableElement = function () {
-    const el = document.createElement('div');
-    el.classList.add('draggable');
-    el.style.top = '50px';
-    el.style.left = '50px';
-    window.makeDraggable(el);
-    return el;
-};
-
 // Create an image element
-window.createImageElement = function (src, x = 50, y = 50) {
-    if (!window.editMode) return;
+window.createImageElement = function (src, x = 50, y = 50, w, h) {
     const el = window.createDraggableElement();
     el.dataset.type = "image";
     const img = document.createElement('img');
@@ -18,12 +7,14 @@ window.createImageElement = function (src, x = 50, y = 50) {
     el.appendChild(img);
     el.style.left = x + 'px';
     el.style.top = y + 'px';
+    if (w) el.style.width = w + 'px';
+    if (h) el.style.height = h + 'px';
     window.canvas.appendChild(el);
+    return el;
 };
 
 // Create a table element
-window.createTableElement = function (tableData, x = 50, y = 50) {
-    if (!window.editMode) return;
+window.createTableElement = function (tableData, x = 50, y = 50, w, h) {
     const el = window.createDraggableElement();
     el.dataset.type = "table";
     const table = document.createElement('table');
@@ -41,12 +32,14 @@ window.createTableElement = function (tableData, x = 50, y = 50) {
     el.appendChild(table);
     el.style.left = x + 'px';
     el.style.top = y + 'px';
+    if (w) el.style.width = w + 'px';
+    if (h) el.style.height = h + 'px';
     window.canvas.appendChild(el);
+    return el;
 };
 
 // Create a text element
-window.createTextElement = function (textValue, x = 50, y = 50) {
-    if (!window.editMode) return;
+window.createTextElement = function (textValue, x = 50, y = 50, w, h) {
     const el = window.createDraggableElement();
     el.dataset.type = "text";
     const textDiv = document.createElement('div');
@@ -55,7 +48,26 @@ window.createTextElement = function (textValue, x = 50, y = 50) {
     el.appendChild(textDiv);
     el.style.left = x + 'px';
     el.style.top = y + 'px';
+    if (w) el.style.width = w + 'px';
+    if (h) el.style.height = h + 'px';
     window.canvas.appendChild(el);
+    return el;
+};
+
+// Create a divider element
+window.createDividerElement = function (x = 50, y = 50, w = 300) {
+    const el = document.createElement('div');
+    el.classList.add('draggable');
+    el.dataset.type = "divider";
+    el.style.top = y + 'px';
+    el.style.left = x + 'px';
+    el.style.width = w + 'px';
+    const hr = document.createElement('hr');
+    el.appendChild(hr);
+    window.makeDraggable(el);
+    window.makeResizable(el);
+    window.canvas.appendChild(el);
+    return el;
 };
 
 // Change image source
@@ -71,20 +83,21 @@ window.removeElement = function (el) {
     if (confirm("Remove this element?")) {
         el.remove();
         window.hideElementToolbar();
+        window.selectedElement = null;
     }
 };
 
 // Table actions
 window.addTableRow = function (el) {
     const table = el.querySelector('table');
-    const colCount = table.rows[0].cells.length;
+    const colCount = table.rows[0] ? table.rows[0].cells.length : 3;
     const tr = document.createElement('tr');
     for (let i = 0; i < colCount; i++) {
         const td = document.createElement('td');
         td.textContent = "";
         tr.appendChild(td);
     }
-    table.appendChild(tr);
+    table.querySelector('tbody').appendChild(tr);
 };
 
 window.addTableColumn = function (el) {
@@ -124,7 +137,16 @@ window.removeTableColumn = function (el) {
 
 // Text formatting actions
 window.formatText = function (el, cmd, value = null) {
-    const textDiv = el.querySelector('div[contenteditable="true"]');
+    const textDiv = el.querySelector('div[contenteditable]');
+    if (!textDiv) return;
     textDiv.focus();
     document.execCommand(cmd, false, value);
+};
+
+// Apply heading format
+window.applyHeading = function (el, level) {
+    const textDiv = el.querySelector('div[contenteditable]');
+    if (!textDiv) return;
+    textDiv.focus();
+    document.execCommand('formatBlock', false, '<h' + level + '>');
 };
