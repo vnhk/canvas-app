@@ -65,4 +65,4 @@ All elements: draggable, resizable (corner handles), selectable with context men
 4. Excel import/export via `ExcelIEEntity<UUID>`
 5. Spring Security `@PostFilter` for row-level access control
 6. Edit mode toggle prevents accidental modifications
-7. Frontend: Vaadin 24 + Vite 5 + Workbox 7
+7. Frontend: React (`my-tools-react/src/pages/canvas/`)
