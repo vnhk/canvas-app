@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.Set;
 import java.util.UUID;
 
+@Deprecated
 public abstract class AbstractCanvasPagesView extends AbstractBervanEntityView<UUID, Canvas> {
     public static final String ROUTE_NAME = "/canvas-app/all-canvas-pages";
 

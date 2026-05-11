@@ -19,6 +19,7 @@ import java.util.UUID;
 @JsModule("./elements.js")
 @JsModule("./layout.js")
 @JsModule("./selection.js")
+@Deprecated
 public class CanvasComponent extends AbstractBervanEntityView<UUID, Canvas> {
     private final CanvasService service;
     private Canvas canvasEntity;
