@@ -1,15 +1,36 @@
+
 package com.bervan.canvas.api;
 
+import com.bervan.core.model.BaseDTO;
+import com.bervan.core.model.BaseModel;
+import com.bervan.canvas.Canvas;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateCanvasRequest {
+public class CreateCanvasRequest implements BaseDTO<UUID> {
+    private UUID id;
     private String name;
     private String category;
+
+    @Override
+    public Class<? extends BaseModel<UUID>> dtoTarget() {
+        @SuppressWarnings("unchecked")
+        Class<? extends BaseModel<UUID>> t = (Class<? extends BaseModel<UUID>>)(Class<?>) Canvas.class;
+        return t;
+    }
+
+    // explicit id accessors (Lombok also generates these but ensure interface contract)
+    @Override
+    public UUID getId() { return id; }
+
+    @Override
+    public void setId(UUID id) { this.id = id; }
 }

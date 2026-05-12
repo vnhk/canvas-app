@@ -1,6 +1,7 @@
 package com.bervan.canvas;
 
 import com.bervan.common.model.BervanOwnedBaseEntity;
+import com.bervan.core.model.BaseModel;
 
 import com.bervan.history.model.HistoryCollection;
 import com.bervan.history.model.HistorySupported;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
-public class Canvas extends BervanOwnedBaseEntity<UUID> implements ExcelIEEntity<UUID> {
+public class Canvas extends BervanOwnedBaseEntity<UUID> implements ExcelIEEntity<UUID>, BaseModel<UUID> {
     @Id
     private UUID id;
     @Size(max = 100)
