@@ -16,9 +16,6 @@ import java.util.UUID;
 @Entity
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @HistorySupported
-@Table(
-        uniqueConstraints = @UniqueConstraint(columnNames = {"name", "owner.id"})
-)
 public class Canvas extends BervanOwnedBaseEntity<UUID> implements ExcelIEEntity<UUID> {
     @Id
     private UUID id;
